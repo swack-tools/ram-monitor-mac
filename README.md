@@ -2,7 +2,7 @@
 
 macOS system daemon (written in Rust) that kills the largest-RAM processes when system memory usage exceeds a configurable threshold (default 50 GB). Runs as root at boot, before any user login.
 
-Released as a signed + notarized universal DMG when CI has signing creds; otherwise as an unsigned DMG with the same layout.
+Releases ship as a **signed + notarized** universal (x86_64 + arm64) DMG — Gatekeeper opens it without warnings.
 
 ## What it does
 
@@ -15,9 +15,22 @@ Terminals and IDEs are **not** protected — they're the most common culprits fo
 1. Download `ram-monitor.dmg` from the [Releases](../../releases) page.
 2. Open it.
 3. Drag **ram-monitor.app** to **Applications**.
-4. Double-click the installed app once. You'll get a native macOS admin-password prompt; on accept it copies the LaunchDaemon plist into `/Library/LaunchDaemons/` and bootstraps the daemon. From the next boot onward the daemon runs as root before login.
+4. Double-click the installed app once. You'll get a native macOS admin-password prompt; on accept it writes `/Library/LaunchDaemons/com.swack.ram-monitor.plist` and bootstraps the daemon. From the next boot onward the daemon runs as root before login.
 
-Or, equivalently from a terminal: `sudo /Applications/ram-monitor.app/Contents/MacOS/ram-monitor install`.
+Equivalently from a terminal:
+
+```bash
+sudo /Applications/ram-monitor.app/Contents/MacOS/ram-monitor install
+```
+
+### Verify the download (optional)
+
+```bash
+shasum -a 256 -c ram-monitor.dmg.sha256          # checksum
+codesign -dvv ram-monitor.dmg                    # Developer ID: SWACKTECH, LLC
+xcrun stapler validate ram-monitor.dmg           # notarization ticket stapled
+spctl --assess --type install ram-monitor.dmg    # Gatekeeper accepts
+```
 
 ## Uninstall
 
