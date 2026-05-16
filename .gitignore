@@ -1,1 +1,42 @@
+# Rust
 /target
+/dist
+**/*.rs.bk
+*.pdb
+
+# Cargo
+.cargo/config.local.toml
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# Build artifacts / packaging
+*.dmg
+*.dmg.sha256
+*.tar.gz
+*.tar.gz.sha256
+dmg_staging/
+ram-monitor.app/
+assets/icon.iconset/
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.zed/
+
+# Secrets — never commit signing materials
+*.p12
+*.cer
+*.mobileprovision
+AuthKey_*.p8
+notary-creds.json
+build.keychain

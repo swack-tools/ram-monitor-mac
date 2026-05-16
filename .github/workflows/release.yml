@@ -1,0 +1,85 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin,aarch64-apple-darwin
+
+      - name: Cache cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [[ "${GITHUB_REF}" =~ ^refs/tags/v(.*)$ ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=dev" >> $GITHUB_OUTPUT
+            echo "tag=dev"     >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build DMG
+        env:
+          VERSION:                    ${{ steps.ver.outputs.version }}
+          BUILD_NUMBER:                ${{ github.run_number }}
+          APPLE_CERTIFICATE_BASE64:   ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_TEAM_NAME:            ${{ secrets.APPLE_TEAM_NAME }}
+          APPLE_TEAM_ID:              ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_ID:                   ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD:         ${{ secrets.APPLE_APP_PASSWORD }}
+        run: bash scripts/make-dmg.sh
+
+      - name: Compose release notes
+        id: notes
+        run: |
+          {
+            echo "notes<<EOF"
+            echo "## ram-monitor ${{ steps.ver.outputs.version }}"
+            echo
+            echo "Universal macOS daemon (x86_64 + arm64) packaged as a DMG."
+            echo
+            echo "### Install (system daemon, runs before login)"
+            echo "1. Download \`ram-monitor.dmg\`."
+            echo "2. Open it."
+            echo "3. Drag **ram-monitor.app** to **Applications**."
+            echo "4. Double-click the installed app once — it'll prompt for your admin password and register the LaunchDaemon. After that it runs as root from boot."
+            echo
+            echo "### Uninstall"
+            echo "Open Terminal: \`sudo /Applications/ram-monitor.app/Contents/MacOS/ram-monitor uninstall\`"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --title "ram-monitor ${{ steps.ver.outputs.version }}" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            ram-monitor.dmg \
+            ram-monitor.dmg.sha256

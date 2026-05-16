@@ -1,7 +1,10 @@
 [package]
 name = "ram-monitor"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+license = "GPL-3.0-or-later"
+description = "macOS system daemon that kills the largest-RAM processes when used memory exceeds a configurable threshold."
+repository = "https://github.com/swack-tools/ram-monitor-mac"
 
 [dependencies]
 sysinfo = "0.32"
