@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.swack.ram-monitor</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/swack/Documents/git/ram-monitor/target/release/ram-monitor</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>RAM_THRESHOLD_GB</key>
+        <string>50</string>
+        <key>RAM_INTERVAL_SECS</key>
+        <string>5</string>
+        <key>RAM_DRY_RUN</key>
+        <string>0</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/swack/Library/Logs/ram-monitor/ram-monitor.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/swack/Library/Logs/ram-monitor/ram-monitor.err.log</string>
+</dict>
+</plist>
